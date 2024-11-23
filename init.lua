@@ -90,8 +90,13 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+vim.g.floaterm_width = 0.4 -- Set width of the floating terminal (80% of screen)
+vim.g.floaterm_height = 0.6 -- Set height of the floating terminal (60% of screen)
+vim.g.floaterm_position = 'center' -- Center the terminal
+vim.g.floaterm_autoinsert = true -- Automatically enter terminal mode
+
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -99,7 +104,7 @@ vim.g.have_nerd_font = false
 --  For more options, you can see `:help option-list`
 
 -- Make line numbers default
-vim.opt.number = true
+vim.opt.number = false
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 -- vim.opt.relativenumber = true
@@ -155,7 +160,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 10
+vim.opt.scrolloff = 15
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -204,6 +209,12 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Open a new floating terminal
+vim.api.nvim_set_keymap('n', '<leader>t', ':FloatermToggle<CR>', { noremap = true, silent = true })
+
+-- Close the terminal with Ctrl+C
+vim.api.nvim_set_keymap('t', '<C-c>', '<C-\\><C-n>:FloatermToggle<CR>', { noremap = true, silent = true })
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -230,6 +241,7 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'voldikss/vim-floaterm',
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -253,6 +265,19 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+    },
+  },
+
+  {
+    'jackMort/ChatGPT.nvim',
+    event = 'VeryLazy',
+    config = function()
+      require('chatgpt').setup()
+    end,
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+      'nvim-lua/plenary.nvim',
+      'nvim-telescope/telescope.nvim', -- Optional
     },
   },
 
@@ -575,6 +600,9 @@ require('lazy').setup({
               end,
             })
           end
+
+          -- Keybinding to send selected code to ChatGPT and ask a question
+          vim.api.nvim_set_keymap('v', '<leader>ai', ":lua require('chatgpt').edit_with_instructions()<CR>", { noremap = true, silent = true })
 
           -- The following code creates a keymap to toggle inlay hints in your
           -- code, if the language server you are using supports them
